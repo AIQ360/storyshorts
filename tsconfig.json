@@ -26,9 +26,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "collections/*": [
-        "./.source/*"
       ]
     }
   },
@@ -37,8 +34,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".source/**/*.ts",
-    ".source/**/*.tsx",
     ".next/dev/types/**/*.ts",
     "trigger.config.ts"
   ],
