@@ -3,7 +3,7 @@ export const maxDuration = 60;
 
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { tasks } from "@trigger.dev/sdk/v3";
+import { tasks } from "@trigger.dev/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { getPlatformConfig } from "@/lib/credits";
 

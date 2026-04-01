@@ -18,13 +18,14 @@ import {
   fontNamePresets,
   subtitlePositionOptions,
   subtitleStyleOptions,
+  ttsServerOptions,
   videoAspectOptions,
   videoConcatModeOptions,
   videoDurationModeOptions,
   videoSourceOptions,
   videoTransitionModeOptions,
   VideoGenerationInput,
-  voiceNamePresets,
+  voiceOptionsByServer,
 } from "@/lib/video-generator";
 
 type VideoJob = {
@@ -101,6 +102,11 @@ export default function VideoGeneratorContent() {
     () => jobs.some((job) => !["completed", "failed", "canceled"].includes(job.status)),
     [jobs],
   );
+  const availableVoiceOptions = useMemo(
+    () => voiceOptionsByServer[form.tts_server] || [],
+    [form.tts_server],
+  );
+  const isCustomSubtitleStyle = form.subtitle_style === "basic";
 
   const updateField = <K extends keyof VideoGenerationInput>(
     key: K,
@@ -172,6 +178,16 @@ export default function VideoGeneratorContent() {
     }, 5000);
     return () => clearInterval(timer);
   }, [hasRunningJob, selectedJobId]);
+
+  useEffect(() => {
+    const nextVoices = voiceOptionsByServer[form.tts_server] || [];
+    if (!nextVoices.length) {
+      return;
+    }
+    if (!nextVoices.includes(form.voice_name)) {
+      updateField("voice_name", nextVoices[0]);
+    }
+  }, [form.tts_server]);
 
   const handleGenerateScript = async () => {
     if (!form.video_subject.trim()) {
@@ -563,20 +579,39 @@ export default function VideoGeneratorContent() {
 
                   {sectionId === "audio" && (
                     <>
-                      <div className="grid gap-3 md:grid-cols-2">
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <label className="space-y-2 text-sm">
+                          <span className="font-medium text-gray-700">TTS Server</span>
+                          <select
+                            value={form.tts_server}
+                            onChange={(e) =>
+                              updateField(
+                                "tts_server",
+                                e.target.value as VideoGenerationInput["tts_server"],
+                              )
+                            }
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                          >
+                            {ttsServerOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Voice Name</span>
-                          <input
-                            list="voice-presets"
+                          <select
                             value={form.voice_name}
                             onChange={(e) => updateField("voice_name", e.target.value)}
                             className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          />
-                          <datalist id="voice-presets">
-                            {voiceNamePresets.map((preset) => (
-                              <option key={preset} value={preset} />
+                          >
+                            {availableVoiceOptions.map((voice) => (
+                              <option key={voice} value={voice}>
+                                {voice}
+                              </option>
                             ))}
-                          </datalist>
+                          </select>
                         </label>
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Custom Audio URL</span>
@@ -589,6 +624,39 @@ export default function VideoGeneratorContent() {
                           />
                         </label>
                       </div>
+                      {(form.tts_server === "azure-tts-v2" ||
+                        form.voice_name.includes("V2")) && (
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <label className="space-y-2 text-sm">
+                            <span className="font-medium text-gray-700">Azure Speech Region</span>
+                            <input
+                              value={form.azure_speech_region}
+                              onChange={(e) => updateField("azure_speech_region", e.target.value)}
+                              className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                            />
+                          </label>
+                          <label className="space-y-2 text-sm">
+                            <span className="font-medium text-gray-700">Azure Speech Key</span>
+                            <input
+                              type="password"
+                              value={form.azure_speech_key}
+                              onChange={(e) => updateField("azure_speech_key", e.target.value)}
+                              className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                            />
+                          </label>
+                        </div>
+                      )}
+                      {form.tts_server === "siliconflow" && (
+                        <label className="space-y-2 text-sm">
+                          <span className="font-medium text-gray-700">SiliconFlow API Key</span>
+                          <input
+                            type="password"
+                            value={form.siliconflow_api_key}
+                            onChange={(e) => updateField("siliconflow_api_key", e.target.value)}
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                          />
+                        </label>
+                      )}
                       <div className="grid gap-3 md:grid-cols-3">
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Voice Volume</span>
@@ -639,9 +707,9 @@ export default function VideoGeneratorContent() {
                             }
                             className="w-full rounded-xl border border-gray-200 px-3 py-2"
                           >
+                            <option value="">none</option>
                             <option value="random">random</option>
                             <option value="custom">custom</option>
-                            <option value="none">none</option>
                           </select>
                         </label>
                         <label className="space-y-2 text-sm">
@@ -722,17 +790,18 @@ export default function VideoGeneratorContent() {
                         </label>
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Font Name</span>
-                          <input
-                            list="font-presets"
+                          <select
                             value={form.font_name}
                             onChange={(e) => updateField("font_name", e.target.value)}
                             className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          />
-                          <datalist id="font-presets">
+                            disabled={!isCustomSubtitleStyle}
+                          >
                             {fontNamePresets.map((preset) => (
-                              <option key={preset} value={preset} />
+                              <option key={preset} value={preset}>
+                                {preset}
+                              </option>
                             ))}
-                          </datalist>
+                          </select>
                         </label>
                       </div>
                       <div className="grid gap-3 md:grid-cols-4">
@@ -743,6 +812,7 @@ export default function VideoGeneratorContent() {
                             value={form.text_fore_color}
                             onChange={(e) => updateField("text_fore_color", e.target.value)}
                             className="h-10 w-full rounded-xl border border-gray-200 px-1 py-1"
+                            disabled={!isCustomSubtitleStyle}
                           />
                         </label>
                         <label className="space-y-2 text-sm">
@@ -752,6 +822,7 @@ export default function VideoGeneratorContent() {
                             value={form.stroke_color}
                             onChange={(e) => updateField("stroke_color", e.target.value)}
                             className="h-10 w-full rounded-xl border border-gray-200 px-1 py-1"
+                            disabled={!isCustomSubtitleStyle}
                           />
                         </label>
                         <label className="space-y-2 text-sm">
@@ -903,6 +974,44 @@ export default function VideoGeneratorContent() {
             )}
             {jobDetail && (
               <div className="space-y-3">
+                {Array.isArray((jobDetail.job.output_json as any)?.videos) &&
+                  (jobDetail.job.output_json as any).videos.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-700">
+                        Final Videos
+                      </p>
+                      <div className="space-y-3">
+                        {(jobDetail.job.output_json as any).videos.map(
+                          (url: string, index: number) => (
+                            <div
+                              key={`${url}-${index}`}
+                              className="rounded-xl border border-gray-200 p-2"
+                            >
+                              <video
+                                src={url}
+                                controls
+                                className="w-full rounded-lg"
+                                preload="metadata"
+                              />
+                              <div className="mt-2 flex items-center justify-between gap-2">
+                                <span className="truncate text-xs text-muted-foreground">
+                                  Video {index + 1}
+                                </span>
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium hover:bg-gray-50"
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
                 <div className="rounded-xl bg-gray-50 p-3 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-gray-700">Status</span>

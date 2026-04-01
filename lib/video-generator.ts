@@ -12,12 +12,11 @@ export type VideoGenerationInput = {
   video_concat_mode: "random" | "sequential";
   video_transition_mode:
     | "None"
+    | "Shuffle"
     | "FadeIn"
     | "FadeOut"
-    | "FadeInOut"
     | "SlideIn"
-    | "SlideOut"
-    | "CrossFade";
+    | "SlideOut";
   video_clip_duration: number;
   video_count: number;
   video_duration_mode: "auto" | "target";
@@ -26,10 +25,14 @@ export type VideoGenerationInput = {
   video_materials: VideoMaterialInput[] | null;
   custom_audio_file: string | null;
   video_language: string;
+  tts_server: "azure-tts-v1" | "azure-tts-v2" | "siliconflow" | "gemini-tts";
   voice_name: string;
+  azure_speech_region: string;
+  azure_speech_key: string;
+  siliconflow_api_key: string;
   voice_volume: number;
   voice_rate: number;
-  bgm_type: "random" | "custom" | "none";
+  bgm_type: "" | "random" | "custom";
   bgm_file: string;
   bgm_volume: number;
   subtitle_enabled: boolean;
@@ -64,12 +67,11 @@ export const videoConcatModeOptions = ["random", "sequential"] as const;
 export const videoDurationModeOptions = ["auto", "target"] as const;
 export const videoTransitionModeOptions = [
   "None",
+  "Shuffle",
   "FadeIn",
   "FadeOut",
-  "FadeInOut",
   "SlideIn",
   "SlideOut",
-  "CrossFade",
 ] as const;
 export const subtitleStyleOptions = [
   "basic",
@@ -100,6 +102,50 @@ export const voiceNamePresets = [
   "gemini:Puck-Male",
 ];
 
+export const ttsServerOptions = [
+  { value: "azure-tts-v1", label: "Azure TTS V1" },
+  { value: "azure-tts-v2", label: "Azure TTS V2" },
+  { value: "siliconflow", label: "SiliconFlow TTS" },
+  { value: "gemini-tts", label: "Google Gemini TTS" },
+] as const;
+
+export const voiceOptionsByServer: Record<
+  VideoGenerationInput["tts_server"],
+  string[]
+> = {
+  "azure-tts-v1": [
+    "en-US-AnaNeural-Female",
+    "en-US-AriaNeural-Female",
+    "en-US-JennyNeural-Female",
+    "en-US-GuyNeural-Male",
+    "en-US-JasonNeural-Male",
+    "en-AU-NatashaNeural-Female",
+    "en-GB-SoniaNeural-Female",
+    "en-IN-NeerjaNeural-Female",
+  ],
+  "azure-tts-v2": [
+    "en-US-AvaMultilingualNeural-V2-Female",
+    "en-US-AndrewMultilingualNeural-V2-Male",
+    "en-US-BrianMultilingualNeural-V2-Male",
+    "en-US-EmmaMultilingualNeural-V2-Female",
+    "en-US-RyanMultilingualNeural-V2-Male",
+  ],
+  siliconflow: [
+    "siliconflow:FunAudioLLM/CosyVoice2-0.5B:david",
+    "siliconflow:FunAudioLLM/CosyVoice2-0.5B:alex",
+    "siliconflow:FunAudioLLM/CosyVoice2-0.5B:anna",
+    "siliconflow:FunAudioLLM/CosyVoice2-0.5B:bella",
+  ],
+  "gemini-tts": [
+    "gemini:Zephyr-Female",
+    "gemini:Puck-Male",
+    "gemini:Kore-Female",
+    "gemini:Orus-Male",
+    "gemini:Leda-Female",
+    "gemini:Charon-Male",
+  ],
+};
+
 export const fontNamePresets = [
   "MicrosoftYaHeiBold.ttc",
   "MicrosoftYaHeiNormal.ttc",
@@ -107,6 +153,7 @@ export const fontNamePresets = [
   "STHeitiLight.ttc",
   "Charm-Bold.ttf",
   "Charm-Regular.ttf",
+  "UTM Kabel KT.ttf",
 ];
 
 export const defaultVideoGenerationInput: VideoGenerationInput = {
@@ -124,7 +171,11 @@ export const defaultVideoGenerationInput: VideoGenerationInput = {
   video_materials: null,
   custom_audio_file: null,
   video_language: "en-US",
+  tts_server: "gemini-tts",
   voice_name: "gemini:Zephyr-Female",
+  azure_speech_region: "",
+  azure_speech_key: "",
+  siliconflow_api_key: "",
   voice_volume: 1,
   voice_rate: 1,
   bgm_type: "random",

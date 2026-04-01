@@ -1,8 +1,16 @@
-import { defineConfig } from "@trigger.dev/sdk/v3";
+import { defineConfig } from "@trigger.dev/sdk"
 
 export default defineConfig({
-  project: process.env.TRIGGER_PROJECT_ID ?? "",
+  project: process.env.TRIGGER_PROJECT_ID || "proj_rcmzlpbpxoqofvftugxi",
   runtime: "node",
-  maxDuration: 3600,
-  dirs: ["./trigger"],
-});
+  logLevel: "log",
+  maxDuration: 1800,
+  retries: {
+    enabledInDev: true,
+    default: {
+      maxAttempts: 3,
+      minTimeoutInMs: 1000,
+      maxTimeoutInMs: 10000,
+    },
+  },
+})
