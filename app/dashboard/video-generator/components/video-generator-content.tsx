@@ -82,7 +82,7 @@ export default function VideoGeneratorContent() {
   const [form, setForm] = useState<VideoGenerationInput>(defaultVideoGenerationInput);
   const [materialsText, setMaterialsText] = useState("");
   const [apiUrl, setApiUrl] = useState(
-    process.env.NEXT_PUBLIC_VIDEO_API_URL || "http://127.0.0.1:8080/api/v1",
+    process.env.VIDEO_ENGINE_URL || "http://127.0.0.1:8080/api/v1",
   );
   const [openSections, setOpenSections] = useState<SectionId[]>([
     "content",
@@ -626,26 +626,26 @@ export default function VideoGeneratorContent() {
                       </div>
                       {(form.tts_server === "azure-tts-v2" ||
                         form.voice_name.includes("V2")) && (
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <label className="space-y-2 text-sm">
-                            <span className="font-medium text-gray-700">Azure Speech Region</span>
-                            <input
-                              value={form.azure_speech_region}
-                              onChange={(e) => updateField("azure_speech_region", e.target.value)}
-                              className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                            />
-                          </label>
-                          <label className="space-y-2 text-sm">
-                            <span className="font-medium text-gray-700">Azure Speech Key</span>
-                            <input
-                              type="password"
-                              value={form.azure_speech_key}
-                              onChange={(e) => updateField("azure_speech_key", e.target.value)}
-                              className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                            />
-                          </label>
-                        </div>
-                      )}
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <label className="space-y-2 text-sm">
+                              <span className="font-medium text-gray-700">Azure Speech Region</span>
+                              <input
+                                value={form.azure_speech_region}
+                                onChange={(e) => updateField("azure_speech_region", e.target.value)}
+                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                              />
+                            </label>
+                            <label className="space-y-2 text-sm">
+                              <span className="font-medium text-gray-700">Azure Speech Key</span>
+                              <input
+                                type="password"
+                                value={form.azure_speech_key}
+                                onChange={(e) => updateField("azure_speech_key", e.target.value)}
+                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                              />
+                            </label>
+                          </div>
+                        )}
                       {form.tts_server === "siliconflow" && (
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">SiliconFlow API Key</span>
@@ -937,7 +937,7 @@ export default function VideoGeneratorContent() {
                         job.status === "completed" && "bg-emerald-100 text-emerald-700",
                         job.status === "failed" && "bg-rose-100 text-rose-700",
                         !["completed", "failed"].includes(job.status) &&
-                          "bg-blue-100 text-blue-700",
+                        "bg-blue-100 text-blue-700",
                       )}
                     >
                       {job.status}
