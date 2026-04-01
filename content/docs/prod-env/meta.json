@@ -1,0 +1,15 @@
+{
+  "title": "Production Environment",
+  "icon": "Cloud",
+  "pages": [
+    "index",
+    "getting-started",
+    "env-var",
+    "astria",
+    "resend",
+    "payment-gateway",
+    "database",
+    "analytics",
+    "deploy"
+  ]
+}

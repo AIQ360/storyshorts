@@ -1,0 +1,132 @@
+---
+title: Payment Gateways
+---
+
+## Integrating Payment Gateways
+
+Framecast AI supports four payment gateways out of the box:
+
+- [Stripe](https://stripe.com/)
+- [PayPal](https://www.paypal.com/)
+- [Razorpay](https://razorpay.com/)
+- [Flutterwave](https://flutterwave.com/)
+
+You can enable one or all of them depending on your target audience and region.
+
+### Stripe
+
+<Steps>
+  <Step>
+    ### Get Your Stripe Keys
+
+    Log in to your [Stripe Dashboard](https://dashboard.stripe.com/) and navigate to the API keys section. Make sure you are in **Live mode** (not test mode). You will need your **Publishable Key** and **Secret Key**.
+
+  </Step>
+
+  <Step>
+    ### Set Up Webhook
+
+    Create a new webhook endpoint in [Stripe Webhooks](https://dashboard.stripe.com/webhooks) pointing to:
+
+    ```
+    https://myapp.vercel.app/api/payment-gateways/stripe/subscription-webhook
+    ```
+
+    Replace `myapp.vercel.app` with your actual production domain. Add the following events to the webhook:
+
+    - `checkout.session.completed` — processes credit purchases (primary event)
+    - `charge.succeeded`
+    - `payment_intent.succeeded`
+    - `payment_intent.created`
+    - `charge.updated`
+    - `product.created`
+    - `price.created`
+
+    Copy the webhook signing secret after creating the endpoint.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    ```bash filename=".env" copy
+    NEXT_PUBLIC_STRIPE_IS_ENABLED=true
+    STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
+    STRIPE_SECRET_KEY=your-stripe-secret-key
+    STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+    ```
+
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Pricing packages and credit amounts are fully configurable from the **Admin
+  Panel**. No need to manually create Stripe products or price IDs.
+</Callout>
+
+### PayPal
+
+<Steps>
+  <Step>
+    ### Create a PayPal App
+
+    Log in to the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/) and select **Apps & Credentials**. Make sure you are in **Live** mode. Create a new app to get your Client ID and Client Secret.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    ```bash filename=".env" copy
+    PAYPAL_API_URL=https://api-m.paypal.com
+    NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-paypal-client-id
+    PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+    ```
+
+    For production, use `https://api-m.paypal.com`. If you need to test first, use `https://api-m.sandbox.paypal.com` and switch to the production URL before going live.
+
+  </Step>
+</Steps>
+
+### Razorpay
+
+<Steps>
+  <Step>
+    ### Get Your Razorpay Keys
+
+    Log in to your [Razorpay Dashboard](https://dashboard.razorpay.com/) and navigate to **Account & Settings** then **API Keys** under Website and App Settings. Make sure **Live mode** is enabled. Generate a new key pair.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    ```bash filename=".env" copy
+    NEXT_PUBLIC_RAZORPAY_KEY_ID=your-razorpay-key-id
+    RAZORPAY_KEY_SECRET=your-razorpay-key-secret
+    ```
+
+  </Step>
+</Steps>
+
+### Flutterwave
+
+<Steps>
+  <Step>
+    ### Get Your Flutterwave Keys
+
+    Log in to your [Flutterwave Dashboard](https://dashboard.flutterwave.com/) and make sure you are in **Live mode**. Navigate to **Settings** then **API Keys**. You will need your **Public Key**, **Secret Key**, and **Encryption Key**.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    ```bash filename=".env" copy
+    NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY=your-flutterwave-public-key
+    FLUTTERWAVE_SECRET_KEY=your-flutterwave-secret-key
+    FLUTTERWAVE_ENCRYPTION_KEY=your-flutterwave-encryption-key
+    ```
+
+  </Step>
+</Steps>

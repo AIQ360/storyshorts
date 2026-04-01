@@ -1,0 +1,62 @@
+---
+title: Getting Started
+---
+
+## Setting Up Git
+
+To deploy Framecast AI to production, you need [Git](https://git-scm.com/) installed on your machine. Git is a version control system that lets you push your codebase to a remote repository and keep it in sync with your deployment platform.
+
+[Download Git](https://git-scm.com/downloads) if you do not have it already.
+
+## Creating a GitHub Repository
+
+Head over to [GitHub](https://www.github.com) and create an account if you do not have one. Once signed in, create a new repository by navigating to the **Repositories** tab and clicking **New**. Keep the repository **private** for security.
+
+## Pushing Your Code
+
+Open a terminal, navigate into your project folder, and run the following commands:
+
+<Steps>
+  <Step>
+    ### Initialize Git
+
+    ```bash filename="Terminal" copy
+    git init
+    ```
+
+  </Step>
+
+  <Step>
+    ### Stage and Commit
+
+    ```bash filename="Terminal" copy
+    git add .
+    ```
+
+    ```bash filename="Terminal" copy
+    git commit -m "Initial commit"
+    ```
+
+  </Step>
+
+  <Step>
+    ### Push to GitHub
+
+    ```bash filename="Terminal" copy
+    git branch -M main
+    ```
+
+    ```bash filename="Terminal" copy
+    git remote add origin https://github.com/your-username/your-repo.git
+    ```
+
+    ```bash filename="Terminal" copy
+    git push -u origin main
+    ```
+
+    Replace the remote origin URL with the actual link to your GitHub repository.
+
+  </Step>
+</Steps>
+
+Your code is now on GitHub and ready to be connected to a deployment platform.

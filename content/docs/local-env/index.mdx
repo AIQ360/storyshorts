@@ -1,0 +1,76 @@
+---
+title: Overview
+---
+
+import {
+  BoxIcon,
+  FilesIcon,
+  GlobeIcon,
+  LinkIcon,
+  MarkdownIcon,
+  StarsIcon,
+  TerminalIcon,
+  GearIcon,
+  LightningIcon,
+} from "../../../components/icons/index";
+
+<Callout type="default">Please follow the guide in the provided order.</Callout>
+
+This section will guide you through the initial setup and installation process on your local machine. You will install dependencies, configure environment variables, connect third party services, set up the database, and start the development server.
+
+<Cards>
+  <Card
+    icon={<FilesIcon />}
+    title="Getting Started"
+    description="Install Node.js, pnpm, and project dependencies"
+    href="/docs/local-env/getting-started"
+  />
+  <Card
+    icon={<MarkdownIcon />}
+    title="Environment Variables"
+    description="Create your .env file with all required keys"
+    href="/docs/local-env/env-var"
+  />
+  <Card
+    icon={<StarsIcon />}
+    title="Astria"
+    description="Connect the AI model training and headshot generation API"
+    href="/docs/local-env/astria"
+  />
+  <Card
+    icon={<LinkIcon />}
+    title="Resend"
+    description="Set up transactional emails for auth and notifications"
+    href="/docs/local-env/resend"
+  />
+  <Card
+    icon={<TerminalIcon />}
+    title="Payment Gateways"
+    description="Configure Stripe, PayPal, and Razorpay in sandbox mode"
+    href="/docs/local-env/payment-gateway"
+  />
+  <Card
+    icon={<GlobeIcon />}
+    title="Database"
+    description="Create tables, enable RLS, and connect SMTP on Supabase"
+    href="/docs/local-env/database"
+  />
+  <Card
+    icon={<GearIcon />}
+    title="Google Analytics"
+    description="Add tracking to monitor traffic and user behavior"
+    href="/docs/local-env/analytics"
+  />
+  <Card
+    icon={<LightningIcon />}
+    title="Starting Server"
+    description="Run the development server and verify everything works"
+    href="/docs/local-env/starting-server"
+  />
+  <Card
+    icon={<BoxIcon />}
+    title="Stopping Server"
+    description="Shut down the development server when you are done"
+    href="/docs/local-env/stopping-server"
+  />
+</Cards>

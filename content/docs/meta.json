@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "---Introduction---",
+    "index",
+    "how-it-works",
+    "buying-guide",
+    "---Environments---",
+    "local-env",
+    "prod-env",
+    "custom-env",
+    "---Resources---",
+    "customization"
+  ]
+}

@@ -1,0 +1,87 @@
+---
+title: Astria
+---
+
+## Setting Up Astria
+
+[Astria](https://www.astria.ai/) is the AI service that powers headshot generation in Framecast AI. It handles model training and image inference.
+
+<Steps>
+  <Step>
+    ### Create an Astria Account
+
+    Head over to [astria.ai](https://www.astria.ai/) and sign up for an account. You will need this to access the API.
+
+  </Step>
+
+  <Step>
+    ### Get Your API Key
+
+    Once logged in, navigate to the [API settings page](https://www.astria.ai/users/edit#api) and copy your API key.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    Open your `.env` file and replace the placeholder with your actual API key:
+
+    ```bash filename=".env" copy
+    ASTRIA_API_KEY=your-actual-astria-api-key
+    ```
+
+    The `ASTRIA_WEBHOOK_URL` should be set to `localhost:3000` for local development. This is already configured by default.
+
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Astria does not offer a free tier. Model training starts at approximately
+  **$0.10 for 8 headshots**, which makes it extremely affordable to get started
+  and test with real results.
+</Callout>
+
+### Testing Webhooks Locally with ngrok
+
+Astria sends webhook callbacks when model training completes and when headshots are generated. Since Astria cannot reach `localhost` directly, you need a tunneling service like [ngrok](https://ngrok.com/) to expose your local server to the internet.
+
+<Steps>
+  <Step>
+    ### Install ngrok
+
+    Sign up at [ngrok.com](https://ngrok.com/) and follow their [setup guide](https://ngrok.com/docs/getting-started/) to install ngrok and connect your auth token.
+
+  </Step>
+
+  <Step>
+    ### Start ngrok
+
+    Run ngrok to create a public tunnel to your local server:
+
+    ```bash filename="Terminal" copy
+    ngrok http 3000
+    ```
+
+    ngrok will give you a public URL like `https://abc123.ngrok-free.app`.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    Set `ASTRIA_WEBHOOK_URL` to your ngrok domain (without `https://`):
+
+    ```bash filename=".env" copy
+    ASTRIA_WEBHOOK_URL=abc123.ngrok-free.app
+    ```
+
+    Restart your development server after updating. Astria will now be able to send webhook callbacks to your local machine through the ngrok tunnel.
+
+  </Step>
+</Steps>
+
+<Callout type="warn">
+  The free ngrok URL changes every time you restart ngrok. You will need to
+  update `ASTRIA_WEBHOOK_URL` each time. If you have a paid ngrok plan, you can
+  use a static domain to avoid this.
+</Callout>

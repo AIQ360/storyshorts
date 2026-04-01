@@ -1,0 +1,79 @@
+---
+title: Resend
+---
+
+## Setting Up Resend
+
+[Resend](https://resend.com/) is the email service used by Framecast AI to send transactional emails. This includes welcome emails, password resets, model training notifications, and headshot delivery confirmations.
+
+<Steps>
+  <Step>
+    ### Create a Resend Account
+
+    Sign up at [resend.com](https://resend.com/) and verify your domain. Resend requires a verified sending domain to deliver emails.
+
+  </Step>
+
+  <Step>
+    ### Get Your API Key
+
+    Navigate to the [API Keys page](https://resend.com/api-keys) and generate a new key.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    Open your `.env` file and set the following values:
+
+    ```bash filename=".env" copy
+    RESEND_API_KEY=your-resend-api-key
+    RESEND_SENDER_EMAIL=Your App <noreply@yourdomain.com>
+    ```
+
+    The sender email must use a domain that is verified in your Resend account.
+
+  </Step>
+</Steps>
+
+### Customizing Email Templates
+
+Framecast AI ships with built in email templates for all transactional emails. If you want to customize the content, styling, or logic of these emails, you will find the relevant code in:
+
+- `lib/emails/` for the email sending logic and templates
+- `lib/resend.ts` for the Resend client configuration
+
+<Callout type="info">
+  Resend offers **3,000 free emails per month** on its free tier. This is more
+  than enough for development and early stage products.
+</Callout>
+
+## Why Resend?
+
+If you are wondering why Resend over something like AWS SES, here is a quick comparison:
+
+| Feature              | Resend                              | AWS SES                                     |
+| -------------------- | ----------------------------------- | ------------------------------------------- |
+| Free Tier            | 3,000 emails/month                  | 3,000 messages/month (first 12 months only) |
+| Setup Time           | Minutes                             | Hours (complex approval process)            |
+| SPF/DKIM             | Automatic                           | Manual configuration                        |
+| Best For             | Startups, Next.js apps, MVPs        | High volume, AWS native infrastructure      |
+| Developer Experience | Excellent SDKs, React Email support | Complex, requires paid support plan         |
+
+Resend is built on top of **AWS SES** under the hood, so you get the same delivery infrastructure with a significantly better developer experience. If you are comfortable with AWS and need to send 100k+ emails per month, SES may be cheaper at scale. For most use cases, Resend is the faster and easier choice.
+
+<Accordions type="single">
+  <Accordion title="Can I use AWS SES instead of Resend?">
+    Yes. Resend uses AWS SES under the hood, so you get the same infrastructure either way. If you prefer SES directly, you can replace the Resend integration in `lib/resend.ts` with your own SES client. Just keep the same function signatures so the rest of the codebase continues to work.
+  </Accordion>
+
+<Accordion title="Can I use a completely different email provider?">
+  Yes. The email logic is centralized in `lib/emails/` and `lib/resend.ts`. You
+  can swap Resend for any provider (SendGrid, Mailgun, Postmark, etc.) by
+  updating the client in `lib/resend.ts` and keeping the same exports.
+</Accordion>
+
+  <Accordion title="Is Resend required to run Framecast AI?">
+    Your app will run without Resend, but email functionality (welcome emails, password resets, training notifications, headshot delivery) will not work. Resend or an equivalent email service is strongly recommended for a complete user experience.
+  </Accordion>
+</Accordions>

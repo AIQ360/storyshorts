@@ -1,0 +1,46 @@
+---
+title: Astria
+---
+
+## Setting Up Astria
+
+[Astria](https://www.astria.ai/) is the AI service that powers headshot generation in Framecast AI. It handles model training and image inference.
+
+<Steps>
+  <Step>
+    ### Create an Astria Account
+
+    Head over to [astria.ai](https://www.astria.ai/) and sign up for an account. You will need this to access the API.
+
+  </Step>
+
+  <Step>
+    ### Get Your API Key
+
+    Once logged in, navigate to the [API settings page](https://www.astria.ai/users/edit#api) and copy your API key.
+
+  </Step>
+
+  <Step>
+    ### Update Your .env File
+
+    Open your `.env` file and replace the placeholder with your actual API key:
+
+    ```bash filename=".env" copy
+    ASTRIA_API_KEY=your-actual-astria-api-key
+    ```
+
+    The `ASTRIA_WEBHOOK_URL` should be set to your production domain without `https://`. For example, if your app is deployed at `https://myapp.vercel.app`, set it to:
+
+    ```bash filename=".env" copy
+    ASTRIA_WEBHOOK_URL=myapp.vercel.app
+    ```
+
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Astria does not offer a free tier. Model training starts at approximately
+  **$0.10 for 8 headshots**, which makes it extremely affordable to get started
+  and test with real results.
+</Callout>

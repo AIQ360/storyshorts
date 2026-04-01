@@ -1,0 +1,123 @@
+---
+title: Database
+---
+
+## Supabase
+
+The database for Framecast AI is powered by [Supabase](https://supabase.com/), an open source Firebase alternative built on top of PostgreSQL. It provides a managed Postgres database, a RESTful API, authentication, real time subscriptions, and storage out of the box.
+
+<Callout type="info">
+  Supabase is fully open source. If you prefer to self host the entire Supabase
+  stack on your own infrastructure (Docker, AWS, etc.), refer to the [official
+  Supabase self hosting docs](https://supabase.com/docs/guides/self-hosting).
+  The rest of this guide assumes you are using Supabase Cloud, which is the
+  recommended approach.
+</Callout>
+
+## Supabase Cloud (Recommended)
+
+Framecast AI uses a single Supabase Cloud project for both local development and production. This is the simplest setup and the one we use ourselves. You create one project on [supabase.com](https://supabase.com/), run the schema, and use the same credentials in your `.env` file for both environments.
+
+<Steps>
+  <Step>
+    ### Create a Supabase Project
+
+    Sign up at [supabase.com](https://supabase.com/) and create a new organization and project. Once the project is provisioned, you will land on the project dashboard.
+
+  </Step>
+
+  <Step>
+    ### Get Your API Keys
+
+    Navigate to **Project Settings** (gear icon in the sidebar) and then **API**. You will find three values:
+
+    - **Project URL** (e.g. `https://abcdefghij.supabase.co`)
+    - **Anon / Public Key** (this is your publishable key)
+    - **Service Role Key** (this is your secret key, never expose it to the client)
+
+    Open your `.env` file and replace the Supabase placeholders:
+
+    ```bash filename=".env" copy
+    # For example: https://abcdefghij.supabase.co
+    NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
+    SUPABASE_SECRET_KEY=your-supabase-secret-key
+    ```
+
+  </Step>
+
+  <Step>
+    ### Create Database Tables
+
+    In your project source code, open the file `supabase/schema.sql`. This file contains the complete SQL schema for Framecast AI including all tables, Row Level Security policies, functions, and default configuration.
+
+    Go to your Supabase dashboard, click **SQL Editor** from the sidebar, create a new query, paste the entire contents of `schema.sql`, and click **Run**. This creates everything your database needs in one step.
+
+    <Callout type="warn">
+      Run the schema only once on a fresh project. Running it again on an existing
+      database will not cause errors (it uses safe defaults and `on conflict` clauses),
+      but you should avoid running it repeatedly.
+    </Callout>
+
+  </Step>
+
+  <Step>
+    ### Connect SMTP
+
+    Supabase has a built in email service but it is limited to 3 emails per hour. For anything beyond basic testing, you should connect your own SMTP provider. We use [Resend](https://resend.com/) for this.
+
+    Navigate to **Project Settings** then **Authentication** from the left sidebar. Scroll down to the **SMTP Settings** section and enable it. Enter the following details:
+
+    ```bash filename="SMTP Provider Settings" copy
+    Sender email = anyname@your-resend-verified-domain
+    Sender name = Your App Name
+    Host = smtp.resend.com
+    Port number = 465
+    Minimum interval between emails being sent = 60
+    Username = resend
+    Password = your-resend-api-key
+    ```
+
+    <Callout type="info">
+      If you use a different email provider (such as AWS SES, Postmark, or
+      Mailgun), the **Host**, **Port**, **Username**, and **Password** fields will
+      be different. Refer to your provider's SMTP documentation for the correct
+      values.
+    </Callout>
+
+    <Screenshot src="/doc-assets/11.png" alt="Supabase — SMTP Email Settings" width={2940} height={1492} />
+
+  </Step>
+
+  <Step>
+    ### Configure URLs
+
+    Navigate to the **Authentication** section in your sidebar, then click **URL Configuration**. Set the following:
+
+    ```bash filename="URL Configuration" copy
+    Site URL = http://localhost:3000/
+    Redirect URL = http://localhost:3000/**
+    ```
+
+    The **Site URL** must end with a trailing slash. The **Redirect URL** must end with a trailing slash followed by two asterisks (`/**`). For local development, use `http://localhost:3000`. You will update these to your production URL when you deploy.
+
+  </Step>
+
+  <Step>
+    ### Enable Authentication Providers
+
+    Navigate to the **Authentication** section, then click **Providers**. Make sure the following are enabled:
+
+    **Email:** This should be enabled by default. It handles email plus password sign ups and sign ins.
+
+    **Google:** Click on Google to expand it and toggle it on. To get the required credentials (Client ID and Client Secret), you will need to set up a project in [Google Cloud Console](https://console.cloud.google.com/). Supabase has an excellent step by step guide for this: [Google Auth with Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google).
+
+    <Callout type="info">
+      You only need to enable the providers you plan to use. Email is required.
+      Google is optional but recommended for a smoother sign in experience.
+    </Callout>
+
+  </Step>
+</Steps>
+
+This completes your Supabase setup. The same project and credentials work for both local development and production. When you are ready to deploy, simply update the **Site URL** and **Redirect URL** in the URL Configuration step to your production domain (e.g. `https://yourapp.com/` and `https://yourapp.com/**`).

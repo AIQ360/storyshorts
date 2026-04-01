@@ -1,0 +1,131 @@
+---
+title: Deployment
+---
+
+## Server Deployment
+
+This guide covers building and deploying the Framecast AI application on your server using [PM2](https://pm2.keymetrics.io/), a production process manager for Node.js. Make sure you have completed all previous steps (environment variables, database, payment gateways, etc.) before deploying.
+
+<Steps>
+  <Step>
+    ### Upload the Codebase
+
+    Create a directory for the application and upload the source code:
+
+    ```bash filename="Terminal" copy
+    mkdir -p /var/www/framecast-ai
+    ```
+
+    Upload the Framecast AI source code to `/var/www/framecast-ai` using `scp`, `rsync`, or your server's file manager. If you are using Git:
+
+    ```bash filename="Terminal" copy
+    cd /var/www/framecast-ai
+    git clone https://your-repo-url.git .
+    ```
+
+    Make sure your `.env` file is placed in the root of this directory with all the environment variables configured from the previous steps.
+
+  </Step>
+
+  <Step>
+    ### Install Dependencies
+
+    Navigate to the project directory and install all dependencies using pnpm:
+
+    ```bash filename="Terminal" copy
+    cd /var/www/framecast-ai
+    ```
+
+    ```bash filename="Terminal" copy
+    pnpm install
+    ```
+
+    <Callout type="warn">
+      Always use **pnpm** as the package manager. The project includes a
+      `pnpm-lock.yaml` file that ensures consistent dependency versions. Using
+      npm or yarn may result in different dependency resolutions and unexpected
+      behavior.
+    </Callout>
+
+  </Step>
+
+  <Step>
+    ### Build the Application
+
+    Run the production build:
+
+    ```bash filename="Terminal" copy
+    pnpm build
+    ```
+
+    This compiles the Next.js application and generates the optimized production output. The build also generates the Pagefind search index via the `postbuild` script automatically.
+
+  </Step>
+
+  <Step>
+    ### Install PM2
+
+    Install PM2 globally to manage the application process:
+
+    ```bash filename="Terminal" copy
+    pnpm add -g pm2
+    ```
+
+  </Step>
+
+  <Step>
+    ### Start the Application
+
+    Start the application using PM2:
+
+    ```bash filename="Terminal" copy
+    pm2 start pnpm --name "framecast-ai" -- start
+    ```
+
+    This starts the Next.js production server on port `3000`, which Nginx (configured in the Getting Started guide) will reverse proxy to your domain.
+
+    Verify the application is running:
+
+    ```bash filename="Terminal" copy
+    pm2 status
+    ```
+
+  </Step>
+
+  <Step>
+    ### Configure Auto Restart
+
+    Save the PM2 process list and configure it to start automatically on server reboot:
+
+    ```bash filename="Terminal" copy
+    pm2 save
+    ```
+
+    ```bash filename="Terminal" copy
+    pm2 startup
+    ```
+
+    PM2 will output a command that you need to copy and run. This registers a systemd service so the application starts automatically when the server restarts.
+
+  </Step>
+
+  <Step>
+    ### Verify Deployment
+
+    Open your browser and visit `https://your-domain.com`. You should see the Framecast AI landing page.
+
+    <Screenshot src="/doc-assets/7.png" alt="Framecast AI — Landing Page" />
+
+    Useful PM2 commands for ongoing management:
+
+    ```bash filename="Terminal" copy
+    pm2 logs framecast-ai    # View application logs
+    pm2 restart framecast-ai # Restart the application
+    pm2 stop framecast-ai    # Stop the application
+    pm2 monit                # Real time monitoring dashboard
+    ```
+
+  </Step>
+</Steps>
+
+Your Framecast AI instance is now live and fully functional on your custom server.

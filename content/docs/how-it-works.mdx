@@ -1,0 +1,60 @@
+---
+title: How It Works
+icon: Workflow
+---
+
+## Tech Stack
+
+Framecast AI is built with a modern, production ready stack:
+
+| Layer           | Technology                                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------------------- |
+| Framework       | [Next.js](https://nextjs.org/) (App Router, Turbopack)                                                         |
+| Language        | TypeScript (strict mode)                                                                                       |
+| Styling         | [Tailwind CSS v4](https://tailwindcss.com/)                                                                    |
+| Components      | [shadcn/ui](https://ui.shadcn.com/) (Radix primitives)                                                         |
+| AI              | [Astria](https://www.astria.ai/) (model training & inference), [Gemini](https://ai.google.dev/) (Magic Editor) |
+| Auth & Database | [Supabase](https://supabase.com/)                                                                              |
+| Payments        | [Stripe](https://stripe.com/), [PayPal](https://www.paypal.com/), [Razorpay](https://razorpay.com/)            |
+| Email           | [Resend](https://resend.com/)                                                                                  |
+| Hosting         | [Vercel](https://vercel.com/)                                                                                  |
+| Docs            | [Fumadocs](https://fumadocs.vercel.app/)                                                                       |
+| i18n            | [next-intl](https://next-intl.dev/) (5 languages)                                                              |
+
+<Callout title="Live Product">
+  See Framecast AI in action at
+  [framecast.jerrizz.com](https://framecast.jerrizz.com).
+</Callout>
+
+## How It Works
+
+Framecast AI takes users from a handful of selfies to studio quality headshots in three simple steps.
+
+<Steps>
+  <Step>
+    ### Train Your AI Model
+
+    Users upload 4 or more clear photos of themselves. The AI (powered by Astria) trains a personal model that learns their unique facial features, lighting preferences, and natural expressions.
+
+    <Screenshot src="/doc-assets/step1.png" alt="Step 1 — Train Your AI Model" />
+
+  </Step>
+
+  <Step>
+    ### Generate Styled Headshots
+
+    Once the model is trained, users browse through professionally designed style packs and generate HD headshots with a single click. Each pack offers a different look, from corporate to creative.
+
+    <Screenshot src="/doc-assets/step2.png" alt="Step 2 — Generate Styled Headshots" />
+
+  </Step>
+
+  <Step>
+    ### Fine Tune with Magic Editor
+
+    Users can further refine any generated headshot using the Magic Editor. Change backgrounds, adjust outfits, or tweak details with a simple text prompt.
+
+    <Screenshot src="/doc-assets/step3.png" alt="Step 3 — Fine Tune with Magic Editor" />
+
+  </Step>
+</Steps>

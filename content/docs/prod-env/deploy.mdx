@@ -1,0 +1,76 @@
+---
+title: Deployment
+---
+
+## Vercel Deployment
+
+In this section, we will deploy Framecast AI to [Vercel](https://vercel.com/). Vercel provides cloud infrastructure to build, scale, and secure your web applications. Its one click deployment makes it a straightforward choice for Next.js projects.
+
+Before deploying, make sure you have [signed up](https://vercel.com/signup) on Vercel. For a smoother experience, sign up using your GitHub account so Vercel can access your repositories directly.
+
+<Steps>
+  <Step>
+    ### Import Git Repository
+
+    On the Vercel dashboard, click **Add New** and then **Project**. Connect your GitHub account if you have not already. Select your Framecast AI repository from the list and click **Import**.
+
+    Open the **Environment Variables** section. You should have all your environment variables ready at this point. If any are missing, revisit the relevant section of this guide.
+
+    <Callout type="info">
+      You can paste all of your environment variables at once. Copy the full
+      contents of your `.env` file and paste it into the **Key** field. Vercel
+      will automatically split the keys and values.
+    </Callout>
+
+    There are a few variables that need placeholder values for now since they depend on the deployed URL:
+
+    ```bash filename="Placeholder Values" copy
+    ASTRIA_WEBHOOK_URL=placeholder
+    NEXT_PUBLIC_APP_URL=https://placeholder.vercel.app
+    ```
+
+    Paste these along with all your other environment variables. Click **Deploy**.
+
+    <Screenshot src="/doc-assets/10.png" alt="Vercel — Environment Variables" />
+
+  </Step>
+
+  <Step>
+    ### Update Supabase URLs
+
+    Once the deployment is complete, Vercel will give you your production URL (e.g. `https://myapp.vercel.app`). Go to your Supabase project dashboard, navigate to **Authentication** then **URL Configuration**, and update:
+
+    ```bash filename="URL Configuration" copy
+    Site URL = https://myapp.vercel.app/
+    Redirect URL = https://myapp.vercel.app/**
+    ```
+
+    Replace `myapp.vercel.app` with your actual Vercel domain. Remember the trailing slash on Site URL and the trailing `/**` on Redirect URL.
+
+  </Step>
+
+  <Step>
+    ### Update Environment Variables
+
+    Now that you have your production URL, go back to Vercel. Navigate to your project **Settings** then **Environment Variables** and update the placeholder values:
+
+    ```bash filename="Environment Variables" copy
+    ASTRIA_WEBHOOK_URL=myapp.vercel.app
+    NEXT_PUBLIC_APP_URL=https://myapp.vercel.app
+    ```
+
+    Replace `myapp.vercel.app` with your actual domain. Remember that `ASTRIA_WEBHOOK_URL` should not include `https://`, while `NEXT_PUBLIC_APP_URL` must include it.
+
+  </Step>
+
+  <Step>
+    ### Redeploy
+
+    After updating the environment variables, you need to redeploy for the changes to take effect. Go to the **Deployments** tab, click the three dots on the latest deployment, and select **Redeploy**.
+
+  </Step>
+</Steps>
+
+<Screenshot src="/doc-assets/7.png" alt="Framecast AI — Landing Page" />
+
+Framecast AI is now live and fully functional.

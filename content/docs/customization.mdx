@@ -1,0 +1,246 @@
+---
+title: Customization
+---
+
+## Customizing Your Application
+
+Once Framecast AI is deployed, you will likely want to update branding, text, images, and other visual elements to match your business. This page covers everything you can safely change and where to find it.
+
+Open your preferred code editor ([VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), or [Sublime Text](https://www.sublimetext.com/)), select **File** then **Open Folder**, and choose the folder where your Framecast AI codebase lives.
+
+---
+
+## Logo
+
+**File:** `app/components/logo.tsx`
+
+The logo component supports two variants: **black** (used on light backgrounds like the navbar) and **white** (used on dark backgrounds like the footer).
+
+**Asset Paths:**
+
+- `public/assets/logo-black.svg` — Black variant
+- `public/assets/logo-white.svg` — White variant
+
+To replace the logo, swap these SVG files with your own while keeping the same file names. The component renders the logo at 160x160px by default with an animated sparkle icon beside it.
+
+<Callout type="info">
+  If your logo has different proportions, you may also want to adjust the
+  `width` and `height` props where the Logo component is used in the navbar and
+  footer.
+</Callout>
+
+---
+
+## Brand Colors
+
+**File:** `app/globals.css`
+
+All theme colors are defined as HSL CSS variables in the `:root` block at the top of the file. The primary brand color is `#0025cc` (a deep blue) defined as:
+
+```css filename="app/globals.css"
+--primary: 229 100% 40%;
+--ring: 229 100% 40%;
+--color-fd-primary: hsl(229, 100%, 40%);
+```
+
+To change the brand color, update these three values to your desired HSL color. Other key variables you may want to adjust:
+
+| Variable             | Purpose                     | Default                          |
+| -------------------- | --------------------------- | -------------------------------- |
+| `--primary`          | Buttons, links, focus rings | `229 100% 40%` (blue)            |
+| `--background`       | Page background             | `0 0% 100%` (white)              |
+| `--foreground`       | Primary text color          | `222.2 84% 4.9%` (near black)    |
+| `--muted`            | Muted backgrounds           | `210 40% 96.1%` (light gray)     |
+| `--muted-foreground` | Secondary text              | `215.4 16.3% 46.9%` (gray)       |
+| `--border`           | Border color                | `214.3 31.8% 91.4%` (light gray) |
+| `--destructive`      | Error and warning elements  | `0 84.2% 60.2%` (red)            |
+| `--radius`           | Global border radius        | `0.75rem`                        |
+
+---
+
+## Font
+
+**File:** `app/layout.tsx`
+
+The application uses **Plus Jakarta Sans** loaded via `next/font/google` with weights 400, 500, 600, and 700. To change it, replace the import and configuration:
+
+```typescript filename="app/layout.tsx"
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+```
+
+Replace `Plus_Jakarta_Sans` with any [Google Font](https://fonts.google.com/) such as `Inter`, `Poppins`, or `Manrope`.
+
+---
+
+## Text and Translations
+
+**Directory:** `messages/`
+
+All user facing text is stored in JSON translation files, one per language:
+
+<Files>
+  <Folder name="messages" defaultOpen>
+    <File name="en.json" />
+    <File name="de.json" />
+    <File name="es.json" />
+    <File name="fr.json" />
+    <File name="it.json" />
+  </Folder>
+</Files>
+
+Each file is organized by section:
+
+| Key          | Controls                                             |
+| ------------ | ---------------------------------------------------- |
+| `Metadata`   | Page title and meta description                      |
+| `Navbar`     | Navigation link labels                               |
+| `Hero`       | Main headline, subtitle, CTA buttons, review quotes  |
+| `HowItWorks` | Step titles and descriptions                         |
+| `Pricing`    | Plan names, feature lists, CTA labels                |
+| `FAQ`        | All questions and answers                            |
+| `Footer`     | Footer links, copyright text, payment method heading |
+
+To change any text on the site, find the matching key in the JSON file and update the value. If you support multiple languages, update all five files. Components reference these keys via `useTranslations()` on the client and `getTranslations()` on the server.
+
+---
+
+## Landing Page Sections
+
+**Directory:** `app/components/`
+
+Each landing page section is a separate component. Here is what each file controls:
+
+| File                    | Section                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `hero.tsx`              | Main hero with headline, CTA, and review carousel    |
+| `how-it-works.tsx`      | Three step process walkthrough                       |
+| `examples.tsx`          | Before and after headshot gallery                    |
+| `showcase.tsx`          | Feature showcase cards                               |
+| `editing-tools.tsx`     | Magic Editor feature highlight                       |
+| `pricing.tsx`           | Pricing tiers (3 cards with different badge themes)  |
+| `faq.tsx`               | Frequently asked questions accordion                 |
+| `final-cta.tsx`         | Bottom call to action section                        |
+| `navbar.tsx`            | Top navigation bar with user menu                    |
+| `footer.tsx`            | Footer with links, payment badges, language selector |
+| `carousel.tsx`          | Image carousel used in hero                          |
+| `card.tsx`              | Reusable card component                              |
+| `language-selector.tsx` | Locale switcher dropdown                             |
+| `client-credits.tsx`    | Credit balance display                               |
+
+---
+
+## Static Assets
+
+**Directory:** `public/`
+
+<Accordions type="multiple">
+  <Accordion title="Logo Files" id="logos">
+    `public/assets/logo-black.svg` and `public/assets/logo-white.svg`. Replace
+    with your own SVGs while keeping the same file names.
+  </Accordion>
+  <Accordion title="Example Headshots" id="examples">
+    `public/assets/examples/` contains 12 sample headshots (`ex-1.jpg` through
+    `ex-12.jpg`) displayed on the landing page. Replace these with headshots
+    generated by your deployment.
+  </Accordion>
+  <Accordion title="Trust Badges" id="badges">
+    `public/assets/trust-badges/` contains payment method SVGs (Visa,
+    Mastercard, American Express, PayPal, Apple Pay, Google Pay, Klarna). These
+    appear in the footer.
+  </Accordion>
+  <Accordion title="Company Logos" id="company">
+    `public/images/company-logos/` contains partner or client logos displayed in
+    the social proof carousel (Amazon, Google, and others). Replace with your
+    own client logos.
+  </Accordion>
+  <Accordion title="Sample Headshots" id="headshots">
+    `public/headshots/` contains sample headshot images (`human1.png` through
+    `human16.png`, animal samples, and product examples) used in the showcase
+    sections.
+  </Accordion>
+  <Accordion title="Avatars and Tutorial" id="avatars">
+    `public/avatars/` contains tutorial images (`1.png` through `12.png`), a
+    phone mockup SVG, and a `tutorial.mp4` video. These are used in the photo
+    upload flow.
+  </Accordion>
+  <Accordion title="Photo Requirements" id="requirements">
+    `public/assets/dos.png` and `public/assets/dont.png` are instructional
+    images showing users what kind of photos to upload.
+  </Accordion>
+</Accordions>
+
+<Callout type="info">
+  When replacing images, keep the same file names and dimensions where possible.
+  This ensures all existing references continue to work without code changes.
+</Callout>
+
+---
+
+## Dashboard Components
+
+**Directory:** `app/dashboard/components/`
+
+These components control the authenticated dashboard experience. Commonly customized areas include:
+
+- `train-model.tsx` — Model training form and photo upload UI
+- `packs-gallery.tsx` — Headshot style packs display
+- `models-table.tsx` — User models list
+- `stripe-table.tsx` — Stripe pricing table embed
+
+---
+
+## Navigation Links
+
+**File:** `app/components/navbar.tsx`
+
+The navbar includes these default links: **Documentation**, **Reviews**, **Pricing**, and **Refunds**. To add, remove, or rename links, edit the `NavLink` components in the file. The link labels are pulled from the `Navbar` section of the translation files.
+
+The footer (`app/components/footer.tsx`) has two link groups: **Product** (How It Works, Examples, Pricing) and **Resources** (Photo Requirements, FAQs, Reviews, Blog). Edit these in the footer component directly.
+
+---
+
+## What Not to Modify
+
+<Callout type="error">
+  Avoid modifying these directories unless you are confident in what you are
+  doing. They contain core application logic and breaking them will cause the
+  application to stop working.
+</Callout>
+
+| Directory  | Contains                                               |
+| ---------- | ------------------------------------------------------ |
+| `lib/`     | Supabase clients, Stripe client, utility functions     |
+| `types/`   | TypeScript type definitions and Zod schemas            |
+| `app/api/` | All backend API routes (auth, payments, AI, webhooks)  |
+| `proxy.ts` | Next.js proxy/middleware for auth session management   |
+| `i18n/`    | Internationalization routing config (not translations) |
+
+---
+
+## Deploying Changes
+
+After making your changes locally, save the files and push to Git:
+
+```bash filename="Terminal" copy
+git add .
+```
+
+```bash filename="Terminal" copy
+git commit -m "Update branding and content"
+```
+
+```bash filename="Terminal" copy
+git push
+```
+
+If you are using **Vercel**, changes deploy automatically within a few minutes. If you are on a **custom server**, SSH in and pull the latest changes, rebuild, and restart:
+
+```bash filename="Terminal" copy
+cd /var/www/framecast-ai && git pull && pnpm build && pm2 restart framecast-ai
+```
