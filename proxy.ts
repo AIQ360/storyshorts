@@ -8,6 +8,7 @@ const intlMiddleware = createMiddleware(routing);
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  
   // Skip i18n for API, dashboard, admin, login, documentation, and static assets
   if (
     pathname.startsWith("/api") ||
