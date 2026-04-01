@@ -266,6 +266,8 @@ export default function VideoGeneratorContent() {
     try {
       const payload: VideoGenerationInput = {
         ...form,
+        video_target_duration:
+          form.video_duration_mode === "target" ? form.video_target_duration : 0,
         video_materials:
           form.video_source === "local" ? parseMaterials(materialsText) : null,
       };
@@ -535,7 +537,14 @@ export default function VideoGeneratorContent() {
                           </select>
                         </label>
                       </div>
-                      <div className="grid gap-3 md:grid-cols-3">
+                      <div
+                        className={cn(
+                          "grid gap-3",
+                          form.video_duration_mode === "target"
+                            ? "md:grid-cols-2"
+                            : "md:grid-cols-1",
+                        )}
+                      >
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Clip Seconds</span>
                           <input
@@ -549,31 +558,30 @@ export default function VideoGeneratorContent() {
                             className="w-full rounded-xl border border-gray-200 px-3 py-2"
                           />
                         </label>
-                        <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">Video Count</span>
-                          <input
-                            type="number"
-                            min={1}
-                            max={10}
-                            value={form.video_count}
-                            onChange={(e) => updateField("video_count", Number(e.target.value || 1))}
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          />
-                        </label>
-                        <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">Target Duration</span>
-                          <input
-                            type="number"
-                            min={10}
-                            max={1800}
-                            value={form.video_target_duration}
-                            onChange={(e) =>
-                              updateField("video_target_duration", Number(e.target.value || 20))
-                            }
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          />
-                        </label>
+                        {form.video_duration_mode === "target" && (
+                          <label className="space-y-2 text-sm">
+                            <span className="font-medium text-gray-700">Target Duration</span>
+                            <input
+                              type="number"
+                              min={10}
+                              max={1800}
+                              value={form.video_target_duration}
+                              onChange={(e) =>
+                                updateField("video_target_duration", Number(e.target.value || 20))
+                              }
+                              className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                            />
+                          </label>
+                        )}
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {form.video_duration_mode === "target"
+                          ? "Target mode enforces a fixed final runtime."
+                          : "Auto mode follows natural script + voice duration."}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Output count is fixed to 1 video per generation for production consistency.
+                      </p>
                     </>
                   )}
 

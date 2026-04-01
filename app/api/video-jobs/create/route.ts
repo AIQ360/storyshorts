@@ -42,13 +42,17 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const input = body?.input;
-    if (!input || typeof input !== "object" || Array.isArray(input)) {
+    const rawInput = body?.input;
+    if (!rawInput || typeof rawInput !== "object" || Array.isArray(rawInput)) {
       return NextResponse.json(
         { error: "input must be a JSON object" },
         { status: 400 },
       );
     }
+    const input = {
+      ...(rawInput as Record<string, unknown>),
+      video_count: 1,
+    };
 
     const providedIdempotencyKey = body?.idempotencyKey;
     const idempotencyKey =
