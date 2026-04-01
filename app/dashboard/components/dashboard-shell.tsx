@@ -12,6 +12,7 @@ import {
   Sparkles,
   MoreVertical,
   Wand2,
+  Clapperboard,
   CoinsIcon,
   ChevronRight,
   Settings,
@@ -262,6 +263,12 @@ export default function DashboardShell({
             label={d("magicEditor")}
             icon={Wand2}
             isActive={isActivePath("/dashboard/magic-editor")}
+          />
+          <SidebarNavLink
+            href="/dashboard/video-generator"
+            label="Video Generator"
+            icon={Clapperboard}
+            isActive={isActivePath("/dashboard/video-generator")}
           />
         </CollapsibleSection>
       </div>
