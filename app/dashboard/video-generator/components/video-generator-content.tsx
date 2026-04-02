@@ -54,7 +54,6 @@ type SectionId =
   | "video"
   | "audio"
   | "subtitle"
-  | "advanced"
   | "materials";
 
 const sectionLabels: Record<SectionId, string> = {
@@ -62,7 +61,6 @@ const sectionLabels: Record<SectionId, string> = {
   video: "Video Composition",
   audio: "Voice & Audio",
   subtitle: "Subtitle Styling",
-  advanced: "Advanced Runtime",
   materials: "Local Materials",
 };
 
@@ -202,7 +200,7 @@ export default function VideoGeneratorContent() {
         body: JSON.stringify({
           video_subject: form.video_subject,
           video_language: form.video_language,
-          paragraph_number: form.paragraph_number,
+          paragraph_number: 1,
           target_duration:
             form.video_duration_mode === "target" ? form.video_target_duration : 0,
         }),
@@ -367,32 +365,6 @@ export default function VideoGeneratorContent() {
                           <input
                             value={form.video_language}
                             onChange={(e) => updateField("video_language", e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
-                          />
-                        </label>
-                        <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">Paragraphs</span>
-                          <input
-                            type="number"
-                            min={1}
-                            max={10}
-                            value={form.paragraph_number}
-                            onChange={(e) =>
-                              updateField("paragraph_number", Number(e.target.value || 1))
-                            }
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
-                          />
-                        </label>
-                        <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">Target Seconds</span>
-                          <input
-                            type="number"
-                            min={10}
-                            max={1800}
-                            value={form.video_target_duration}
-                            onChange={(e) =>
-                              updateField("video_target_duration", Number(e.target.value || 20))
-                            }
                             className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
                           />
                         </label>
@@ -812,7 +784,7 @@ export default function VideoGeneratorContent() {
                           </select>
                         </label>
                       </div>
-                      <div className="grid gap-3 md:grid-cols-4">
+                      <div className="grid gap-3 md:grid-cols-5">
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Text Color</span>
                           <input
@@ -858,43 +830,29 @@ export default function VideoGeneratorContent() {
                             className="w-full rounded-xl border border-gray-200 px-3 py-2"
                           />
                         </label>
+                        <label className="space-y-2 text-sm">
+                          <span className="font-medium text-gray-700">Text Background</span>
+                          <select
+                            value={String(form.text_background_color)}
+                            onChange={(e) =>
+                              updateField(
+                                "text_background_color",
+                                e.target.value === "true" ? true : e.target.value,
+                              )
+                            }
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
+                          >
+                            <option value="true">true</option>
+                            <option value="false">false</option>
+                            <option value="#00000080">semi-black</option>
+                            <option value="#1F2937A0">charcoal</option>
+                          </select>
+                        </label>
                       </div>
                     </>
                   )}
 
-                  {sectionId === "advanced" && (
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <label className="space-y-2 text-sm">
-                        <span className="font-medium text-gray-700">Threads</span>
-                        <input
-                          type="number"
-                          min={1}
-                          max={16}
-                          value={form.n_threads}
-                          onChange={(e) => updateField("n_threads", Number(e.target.value || 2))}
-                          className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                        />
-                      </label>
-                      <label className="space-y-2 text-sm">
-                        <span className="font-medium text-gray-700">Text Background</span>
-                        <select
-                          value={String(form.text_background_color)}
-                          onChange={(e) =>
-                            updateField(
-                              "text_background_color",
-                              e.target.value === "true" ? true : e.target.value,
-                            )
-                          }
-                          className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                        >
-                          <option value="true">true</option>
-                          <option value="false">false</option>
-                          <option value="#00000080">semi-black</option>
-                          <option value="#1F2937A0">charcoal</option>
-                        </select>
-                      </label>
-                    </div>
-                  )}
+
 
                   {sectionId === "materials" && (
                     <label className="space-y-2 text-sm">

@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
     const input = {
       ...(rawInput as Record<string, unknown>),
       video_count: 1,
+      n_threads: 2,
+      paragraph_number: 1,
     };
 
     const providedIdempotencyKey = body?.idempotencyKey;
