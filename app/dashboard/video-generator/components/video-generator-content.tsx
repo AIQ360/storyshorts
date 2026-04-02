@@ -561,16 +561,16 @@ export default function VideoGeneratorContent() {
                         {form.video_duration_mode === "target" && (
                           <label className="space-y-2 text-sm">
                             <span className="font-medium text-gray-700">Target Duration</span>
-                            <input
-                              type="number"
-                              min={10}
-                              max={1800}
+                            <select
                               value={form.video_target_duration}
                               onChange={(e) =>
-                                updateField("video_target_duration", Number(e.target.value || 20))
+                                updateField("video_target_duration", Number(e.target.value || 30))
                               }
                               className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                            />
+                            >
+                              <option value={30}>30 seconds</option>
+                              <option value={60}>60 seconds</option>
+                            </select>
                           </label>
                         )}
                       </div>

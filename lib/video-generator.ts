@@ -166,7 +166,7 @@ export const defaultVideoGenerationInput: VideoGenerationInput = {
   video_clip_duration: 3,
   video_count: 1,
   video_duration_mode: "target",
-  video_target_duration: 20,
+  video_target_duration: 30,
   video_source: "pexels",
   video_materials: null,
   custom_audio_file: null,
