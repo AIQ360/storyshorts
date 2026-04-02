@@ -5,7 +5,9 @@ export type VideoMaterialInput = {
 };
 
 export type VideoGenerationInput = {
+  content_mode: "subject" | "prompt";
   video_subject: string;
+  video_prompt: string;
   video_script: string;
   video_terms: string;
   video_aspect: "16:9" | "9:16" | "1:1";
@@ -62,6 +64,7 @@ export type VideoGenerationInput = {
 };
 
 export const videoAspectOptions = ["16:9", "9:16", "1:1"] as const;
+export const contentModeOptions = ["subject", "prompt"] as const;
 export const videoSourceOptions = ["pexels", "pixabay", "local"] as const;
 export const videoConcatModeOptions = ["random", "sequential"] as const;
 export const videoDurationModeOptions = ["auto", "target"] as const;
@@ -297,7 +300,9 @@ export const fontNamePresets = [
 ];
 
 export const defaultVideoGenerationInput: VideoGenerationInput = {
+  content_mode: "subject",
   video_subject: "",
+  video_prompt: "",
   video_script: "",
   video_terms: "",
   video_aspect: "9:16",

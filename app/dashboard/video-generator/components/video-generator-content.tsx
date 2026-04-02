@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bot,
   Clapperboard,
   Loader2,
   PlayCircle,
   RefreshCw,
-  Sparkles,
-  Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  contentModeOptions,
   defaultVideoGenerationInput,
   fontNamePresets,
   subtitlePositionOptions,
@@ -81,10 +80,6 @@ export default function VideoGeneratorContent() {
   const [materialsText, setMaterialsText] = useState("");
   const [voiceSearch, setVoiceSearch] = useState("");
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [apiUrl, setApiUrl] = useState(
-    process.env.VIDEO_ENGINE_URL || "http://127.0.0.1:8080/api/v1",
-  );
   const [openSections, setOpenSections] = useState<SectionId[]>([
     "content",
     "video",
@@ -95,8 +90,6 @@ export default function VideoGeneratorContent() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [jobDetail, setJobDetail] = useState<VideoJobDetail | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
-  const [isGeneratingTerms, setIsGeneratingTerms] = useState(false);
   const [isRefreshingJobs, setIsRefreshingJobs] = useState(false);
 
   const hasRunningJob = useMemo(
@@ -205,70 +198,14 @@ export default function VideoGeneratorContent() {
     return () => clearInterval(timer);
   }, [hasRunningJob, selectedJobId]);
 
-  const handleGenerateScript = async () => {
-    if (!form.video_subject.trim()) {
-      toast.error("Enter a video subject first");
-      return;
-    }
-    setIsGeneratingScript(true);
-    try {
-      const res = await fetch(`${apiUrl}/scripts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          video_subject: form.video_subject,
-          video_language: form.video_language,
-          paragraph_number: 1,
-          target_duration:
-            form.video_duration_mode === "target" ? form.video_target_duration : 0,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || data?.status !== 200) {
-        throw new Error(data?.message || "Script generation failed");
-      }
-      updateField("video_script", data?.data?.video_script || "");
-      toast.success("Script generated");
-    } catch (error: any) {
-      toast.error(error?.message || "Script generation failed");
-    } finally {
-      setIsGeneratingScript(false);
-    }
-  };
-
-  const handleGenerateTerms = async () => {
-    if (!form.video_subject.trim() || !form.video_script.trim()) {
-      toast.error("Need both subject and script to generate keywords");
-      return;
-    }
-    setIsGeneratingTerms(true);
-    try {
-      const res = await fetch(`${apiUrl}/terms`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          video_subject: form.video_subject,
-          video_script: form.video_script,
-          amount: 5,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || data?.status !== 200) {
-        throw new Error(data?.message || "Keyword generation failed");
-      }
-      const terms = data?.data?.video_terms || [];
-      updateField("video_terms", Array.isArray(terms) ? terms.join(", ") : String(terms));
-      toast.success("Keywords generated");
-    } catch (error: any) {
-      toast.error(error?.message || "Keyword generation failed");
-    } finally {
-      setIsGeneratingTerms(false);
-    }
-  };
-
   const handleSubmit = async () => {
-    if (!form.video_subject.trim() && !form.video_script.trim()) {
-      toast.error("Provide a video subject or script");
+    const subjectMode = form.content_mode === "subject";
+    if (subjectMode && !form.video_subject.trim()) {
+      toast.error("Enter a subject for Subject to Video mode");
+      return;
+    }
+    if (!subjectMode && !form.video_prompt.trim()) {
+      toast.error("Enter a prompt for Prompt to Video mode");
       return;
     }
     if (form.video_source === "local") {
@@ -280,8 +217,12 @@ export default function VideoGeneratorContent() {
 
     setIsSubmitting(true);
     try {
+      const normalizedSubject = subjectMode ? form.video_subject.trim() : form.video_prompt.trim();
       const payload: VideoGenerationInput = {
         ...form,
+        video_subject: normalizedSubject,
+        video_script: "",
+        video_terms: "",
         video_target_duration:
           form.video_duration_mode === "target" ? form.video_target_duration : 0,
         video_materials:
@@ -343,19 +284,6 @@ export default function VideoGeneratorContent() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="space-y-4">
-          <div className="rounded-2xl border border-gray-200/70 bg-white p-5 shadow-sm">
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2 text-sm">
-                <span className="font-medium text-gray-700">Python API URL</span>
-                <input
-                  value={apiUrl}
-                  onChange={(e) => setApiUrl(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none ring-indigo-500 focus:ring-2"
-                />
-              </label>
-            </div>
-          </div>
-
           {(Object.keys(sectionLabels) as SectionId[]).map((sectionId) => (
             <div key={sectionId} className="overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
               <button
@@ -370,13 +298,46 @@ export default function VideoGeneratorContent() {
                   {sectionId === "content" && (
                     <>
                       <label className="space-y-2 text-sm">
-                        <span className="font-medium text-gray-700">Video Subject</span>
+                        <span className="font-medium text-gray-700">Mode</span>
+                        <select
+                          value={form.content_mode}
+                          onChange={(e) =>
+                            updateField(
+                              "content_mode",
+                              e.target.value as VideoGenerationInput["content_mode"],
+                            )
+                          }
+                          className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
+                        >
+                          {contentModeOptions.map((mode) => (
+                            <option key={mode} value={mode}>
+                              {mode === "subject" ? "Subject to Video" : "Prompt to Video"}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {form.content_mode === "subject" ? (
+                      <label className="space-y-2 text-sm">
+                          <span className="font-medium text-gray-700">Subject</span>
                         <input
                           value={form.video_subject}
                           onChange={(e) => updateField("video_subject", e.target.value)}
+                            placeholder="e.g. The rise of ancient Rome in 60 seconds"
                           className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
                         />
                       </label>
+                      ) : (
+                        <label className="space-y-2 text-sm">
+                          <span className="font-medium text-gray-700">Prompt</span>
+                          <textarea
+                            value={form.video_prompt}
+                            onChange={(e) => updateField("video_prompt", e.target.value)}
+                            rows={5}
+                            placeholder="Use natural language to describe what you want to see in the video..."
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
+                          />
+                        </label>
+                      )}
                       <div className="grid gap-3 md:grid-cols-3">
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Language</span>
@@ -393,54 +354,9 @@ export default function VideoGeneratorContent() {
                           </select>
                         </label>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="rounded-full"
-                          onClick={handleGenerateScript}
-                          disabled={isGeneratingScript}
-                        >
-                          {isGeneratingScript ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Wand2 className="mr-2 h-4 w-4" />
-                          )}
-                          Generate Script
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="rounded-full"
-                          onClick={handleGenerateTerms}
-                          disabled={isGeneratingTerms}
-                        >
-                          {isGeneratingTerms ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="mr-2 h-4 w-4" />
-                          )}
-                          Generate Keywords
-                        </Button>
-                      </div>
-                      <label className="space-y-2 text-sm">
-                        <span className="font-medium text-gray-700">Video Script</span>
-                        <textarea
-                          value={form.video_script}
-                          onChange={(e) => updateField("video_script", e.target.value)}
-                          rows={6}
-                          className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
-                        />
-                      </label>
-                      <label className="space-y-2 text-sm">
-                        <span className="font-medium text-gray-700">Video Keywords</span>
-                        <textarea
-                          value={form.video_terms}
-                          onChange={(e) => updateField("video_terms", e.target.value)}
-                          rows={3}
-                          className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
-                        />
-                      </label>
+                      <p className="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
+                        Script and keywords are fully generated by backend for both modes.
+                      </p>
                     </>
                   )}
 
