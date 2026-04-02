@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Bot,
   Clapperboard,
@@ -18,14 +18,14 @@ import {
   fontNamePresets,
   subtitlePositionOptions,
   subtitleStyleOptions,
-  ttsServerOptions,
+  supportedLanguages,
+  unifiedVoiceOptions,
   videoAspectOptions,
   videoConcatModeOptions,
   videoDurationModeOptions,
   videoSourceOptions,
   videoTransitionModeOptions,
   VideoGenerationInput,
-  voiceOptionsByServer,
 } from "@/lib/video-generator";
 
 type VideoJob = {
@@ -79,6 +79,9 @@ function parseMaterials(raw: string) {
 export default function VideoGeneratorContent() {
   const [form, setForm] = useState<VideoGenerationInput>(defaultVideoGenerationInput);
   const [materialsText, setMaterialsText] = useState("");
+  const [voiceSearch, setVoiceSearch] = useState("");
+  const [playingVoice, setPlayingVoice] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [apiUrl, setApiUrl] = useState(
     process.env.VIDEO_ENGINE_URL || "http://127.0.0.1:8080/api/v1",
   );
@@ -100,10 +103,6 @@ export default function VideoGeneratorContent() {
     () => jobs.some((job) => !["completed", "failed", "canceled"].includes(job.status)),
     [jobs],
   );
-  const availableVoiceOptions = useMemo(
-    () => voiceOptionsByServer[form.tts_server] || [],
-    [form.tts_server],
-  );
   const isCustomSubtitleStyle = form.subtitle_style === "basic";
 
   const updateField = <K extends keyof VideoGenerationInput>(
@@ -112,6 +111,35 @@ export default function VideoGeneratorContent() {
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handlePlayVoice = (voice: any) => {
+    if (playingVoice === voice.value) {
+      setPlayingVoice(null);
+      toast.info("Preview stopped.");
+    } else {
+      setPlayingVoice(voice.value);
+      toast.info(`Playing preview for ${voice.label}... (Note: Requires actual .mp3 files to be hosted)`);
+      // In a real app: 
+      // if (audioRef.current) { audioRef.current.src = voice.previewUrl; audioRef.current.play(); }
+    }
+  };
+
+  const filteredVoices = unifiedVoiceOptions.filter((v) => {
+    // If the voice is Gemini or an Edge Multilingual voice, it supports all languages, so always show it if it matches the text search.
+    // If the voice is standard Edge, only show it if its language code matches the selected video_language.
+    const matchesSearch =
+      v.label.toLowerCase().includes(voiceSearch.toLowerCase()) ||
+      v.description.toLowerCase().includes(voiceSearch.toLowerCase()) ||
+      v.tags.some((t) => t.toLowerCase().includes(voiceSearch.toLowerCase()));
+
+    if (!matchesSearch) return false;
+
+    if (v.engine === "gemini-tts" || v.tags.includes("Multilingual")) return true;
+    
+    // For standard Edge TTS, extract the language code from the value (e.g. "en-US-AriaNeural" -> "en-US")
+    const edgeLangCode = v.value.split("-").slice(0, 2).join("-");
+    return edgeLangCode === form.video_language;
+  });
 
   const toggleSection = (id: SectionId) => {
     setOpenSections((prev) =>
@@ -176,16 +204,6 @@ export default function VideoGeneratorContent() {
     }, 5000);
     return () => clearInterval(timer);
   }, [hasRunningJob, selectedJobId]);
-
-  useEffect(() => {
-    const nextVoices = voiceOptionsByServer[form.tts_server] || [];
-    if (!nextVoices.length) {
-      return;
-    }
-    if (!nextVoices.includes(form.voice_name)) {
-      updateField("voice_name", nextVoices[0]);
-    }
-  }, [form.tts_server]);
 
   const handleGenerateScript = async () => {
     if (!form.video_subject.trim()) {
@@ -362,11 +380,17 @@ export default function VideoGeneratorContent() {
                       <div className="grid gap-3 md:grid-cols-3">
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Language</span>
-                          <input
+                          <select
                             value={form.video_language}
                             onChange={(e) => updateField("video_language", e.target.value)}
                             className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none ring-indigo-500 focus:ring-2"
-                          />
+                          >
+                            {supportedLanguages.map((lang) => (
+                              <option key={lang.value} value={lang.value}>
+                                {lang.label}
+                              </option>
+                            ))}
+                          </select>
                         </label>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -559,40 +583,71 @@ export default function VideoGeneratorContent() {
 
                   {sectionId === "audio" && (
                     <>
-                      <div className="grid gap-3 md:grid-cols-3">
+                      <div className="grid gap-3 col-span-full">
                         <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">TTS Server</span>
-                          <select
-                            value={form.tts_server}
-                            onChange={(e) =>
-                              updateField(
-                                "tts_server",
-                                e.target.value as VideoGenerationInput["tts_server"],
-                              )
-                            }
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          >
-                            {ttsServerOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
+                          <span className="font-medium text-gray-700">Voice Library</span>
+                          <input 
+                            type="text" 
+                            placeholder="Search voices by name, style, or tag..." 
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={voiceSearch}
+                            onChange={(e) => setVoiceSearch(e.target.value)}
+                          />
+                          <div className="grid gap-3 max-h-[400px] overflow-y-auto pr-2 mt-2">
+                            {filteredVoices.map(voice => (
+                              <div 
+                                key={voice.value}
+                                onClick={() => {
+                                  updateField("voice_name", voice.value);
+                                  updateField("tts_server", voice.engine as any);
+                                }}
+                                className={cn(
+                                  "flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all",
+                                  form.voice_name === voice.value ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-gray-50/50 hover:border-indigo-300"
+                                )}
+                              >
+                                <div className="flex items-center gap-4">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); handlePlayVoice(voice); }}
+                                    className="h-10 w-10 shrink-0 rounded-full bg-white shadow-sm flex items-center justify-center text-indigo-600 hover:bg-indigo-50 transition-colors"
+                                  >
+                                    {playingVoice === voice.value ? (
+                                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                    ) : (
+                                      <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    )}
+                                  </button>
+                                  <div>
+                                    <div className="font-semibold text-gray-900 flex items-center gap-2">
+                                      {voice.label} - {voice.description}
+                                      {voice.isPremium && (
+                                        <span className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-100 to-yellow-100 border border-yellow-200 text-yellow-700 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                          Premium
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-0.5">
+                                      {voice.engine === 'gemini-tts' ? 'Google Gemini Engine' : 'Microsoft Edge TTS Engine'}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 flex-wrap justify-end max-w-[40%]">
+                                  {voice.tags.map(tag => (
+                                    <span key={tag} className="px-2 py-1 text-xs rounded-md bg-white border border-gray-100 text-gray-600 shadow-sm">{tag}</span>
+                                  ))}
+                                </div>
+                              </div>
                             ))}
-                          </select>
+                            {filteredVoices.length === 0 && (
+                              <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                No voices found matching your search.
+                              </div>
+                            )}
+                          </div>
                         </label>
-                        <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">Voice Name</span>
-                          <select
-                            value={form.voice_name}
-                            onChange={(e) => updateField("voice_name", e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          >
-                            {availableVoiceOptions.map((voice) => (
-                              <option key={voice} value={voice}>
-                                {voice}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
+                      </div>
+
+                      <div className="grid gap-3 md:grid-cols-2">
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Custom Audio URL</span>
                           <input
@@ -604,39 +659,7 @@ export default function VideoGeneratorContent() {
                           />
                         </label>
                       </div>
-                      {(form.tts_server === "azure-tts-v2" ||
-                        form.voice_name.includes("V2")) && (
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <label className="space-y-2 text-sm">
-                              <span className="font-medium text-gray-700">Azure Speech Region</span>
-                              <input
-                                value={form.azure_speech_region}
-                                onChange={(e) => updateField("azure_speech_region", e.target.value)}
-                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                              />
-                            </label>
-                            <label className="space-y-2 text-sm">
-                              <span className="font-medium text-gray-700">Azure Speech Key</span>
-                              <input
-                                type="password"
-                                value={form.azure_speech_key}
-                                onChange={(e) => updateField("azure_speech_key", e.target.value)}
-                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                              />
-                            </label>
-                          </div>
-                        )}
-                      {form.tts_server === "siliconflow" && (
-                        <label className="space-y-2 text-sm">
-                          <span className="font-medium text-gray-700">SiliconFlow API Key</span>
-                          <input
-                            type="password"
-                            value={form.siliconflow_api_key}
-                            onChange={(e) => updateField("siliconflow_api_key", e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                          />
-                        </label>
-                      )}
+                      
                       <div className="grid gap-3 md:grid-cols-3">
                         <label className="space-y-2 text-sm">
                           <span className="font-medium text-gray-700">Voice Volume</span>
